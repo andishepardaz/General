@@ -25,8 +25,8 @@ else {
         echo "کد ملی وارد شده صحیح نمی باشد";
     }
     else{
-        $con1=oci_connect("system","data1111224","192.168.137.1:1521/GENERAL");
-		$codemellimd5=md5($codemelli);
+        $con1=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
+		$codemellimd5=base64_encode($codemelli);
         $rcode=oci_parse($con1,"SELECT * FROM T1 WHERE T1_1='$codemellimd5'");
         oci_execute($rcode);
         $checkcode=oci_fetch_row($rcode);
@@ -34,7 +34,7 @@ else {
             echo "کد ملی قبلا وجود دارد";
         }
         else {
-			$codemellimd5=md5($codemelli);
+			$codemellimd5=base64_encode($codemelli);
             $rcode2 = oci_parse($con1, "INSERT INTO T1(T1_1) VALUES ('$codemellimd5')");
             oci_execute($rcode2);
             echo "Your national code inserted successfully";
@@ -54,16 +54,16 @@ if($email && $cemail ){
 			echo "your email address is invalid try again";
 		}else{
 		//برقراری اتصال به دیتابست
-            $con=oci_connect("system","data1111224","192.168.137.1:1521/GENERAL");
-			$emailmd5=md5($email);
+            $con=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
+			$emailmd5=base64_encode($email);
             $remail=oci_parse($con,"SELECT T5_3 FROM T5 WHERE T5_3='$emailmd5' ");
             oci_execute($remail);
             $checkmail=oci_fetch_row($remail);
             if($checkmail!=0) {
                 echo "this email is already existed";
             }else {
-				$emailmd5=md5($email);
-				$codemellimd5=md5($codemelli);
+				$emailmd5=base64_encode($email);
+				$codemellimd5=base64_encode($codemelli);
 				$rcd2 = oci_parse($con, "INSERT INTO T5(T5_1) VALUES ('$codemellimd5')");
 				oci_execute($rcd2);
                 $remail2 = oci_parse($con,"UPDATE T5 SET T5_3='$emailmd5' WHERE T5_1='$codemellimd5'");
