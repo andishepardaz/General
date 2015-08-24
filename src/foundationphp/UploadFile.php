@@ -19,11 +19,24 @@ class UploadFile {
         }
         $this->destination = $uploadfolder;
     }
-    public function upload($renameDuplicates = true){
+    public function upload($file){
+        $renameDuplicates = true;
         $this->renameDuplicates = $renameDuplicates;
-        $uploaded = current($_FILES);
+        $uploaded = $file;
         if($this->checkfile($uploaded)){
             $this->movefile($uploaded);
+        }
+    }
+    public function save($file,$Tb_name,$CL_name,$ID_name,$ID_value){
+        $renameDuplicates = true;
+        $this->renameDuplicates = $renameDuplicates;
+        $uploaded = $file;
+        $Tb = $Tb_name;
+        $Cl = $CL_name;
+        $ID = $ID_name;
+        $IDV = $ID_value;
+        if($this->checkfile($uploaded)){
+            $this->savefileOci($uploaded,$Tb,$Cl,$ID,$IDV);
         }
     }
     public function getMessages(){
@@ -161,6 +174,13 @@ class UploadFile {
                 $this->suffix =".$suffix";
             }
         }
+    }
+    protected function savefileOci($file,$Tb_name,$CL_name,$ID_name,$ID_value){
+        $filen=($file['tmp_name']);
+        $con = oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
+        $q = oci_parse($con,"UPDATE $Tb_name SET $CL_name=utl_raw.cast_to_raw('$filen') WHERE $ID_name= $ID_value");
+        oci_execute($q);
+        oci_close($con);
     }
     protected function movefile($file){
         $filename = isset($this->newName) ? $this->newName : $file['name'];

@@ -22,6 +22,8 @@
             <input type="file" name="scansh"/>
             <label for="filename">Scan Carte Melli</label>
             <input type="file" name="scancm"/>
+            <label for="filename">Scan 3X4</label>
+            <input type="file" name="scanp"/>
         </p>
     </form>
     <p>

@@ -185,10 +185,12 @@ if($checkcodemelli){
         require_once 'src/foundationphp/UploadFile.php';
         $destination = __DIR__ . '/uploaded';
         try {
+            $codemellimd5=base64_encode($codemelli);
             $upload = new UploadFile($destination);
             $upload->setMaxsize($max); //Change the file size
-            $upload->upload($_FILES['scansh']);
-            $upload->upload($_FILES['scancm']);
+            $upload->save($_FILES['scanp'],"T1","T1_15","T1_1",$codemellimd5);
+            $upload->save($_FILES['scansh'],"T1","T1_16","T1_1",$codemellimd5);
+            $upload->save($_FILES['scancm'],"T1","T1_17","T1_1",$codemellimd5);
             $result = $upload->getMessages();
         } catch(Exception $e) {
             $result[] = $e->getMessage();
