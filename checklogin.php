@@ -1,3 +1,9 @@
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+
 <?php
 //اضافه کردن کپچا به پروژه
 //include 'captcha.php';
@@ -55,3 +61,5 @@ else {
 
 
 ?>
+</body>
+</html>

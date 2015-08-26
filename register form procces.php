@@ -1,3 +1,9 @@
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+
 <?php
 $codemelli=$_POST['codemelli'];
 $email=$_POST['email'];
@@ -19,14 +25,14 @@ elseif(preg_match("([0]{10}|[1]{10}|[2]{10}|[3]{10}|[4]{10}|[5]{10}|[6]{10}|[7]{
     echo "اعداد کد ملی نمی توانند برابر هم باشند";
 }
 else {
-    $code = test_codemelli($_POST["codemelli"]);
+    $code = test_codemelli($codemelli);
     if(!$code)
     {
         echo "کد ملی وارد شده صحیح نمی باشد";
     }
     else{
         $con1=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
-		$codemellimd5=base64_encode($codemelli);
+		$codemellimd5=encrypt($codemelli,$codemelli);
         $rcode=oci_parse($con1,"SELECT * FROM T1 WHERE T1_1='$codemellimd5'");
         oci_execute($rcode);
         $checkcode=oci_fetch_row($rcode);
@@ -34,7 +40,7 @@ else {
             echo "کد ملی قبلا وجود دارد";
         }
         else {
-			$codemellimd5=base64_encode($codemelli);
+			$codemellimd5=encrypt($codemelli,$codemelli);
             $rcode2 = oci_parse($con1, "INSERT INTO T1(T1_1) VALUES ('$codemellimd5')");
             oci_execute($rcode2);
             echo "Your national code inserted successfully";
@@ -55,15 +61,15 @@ if($email && $cemail ){
 		}else{
 		//برقراری اتصال به دیتابست
             $con=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
-			$emailmd5=base64_encode($email);
+			$emailmd5=encrypt($email,$codemelli);
             $remail=oci_parse($con,"SELECT T5_3 FROM T5 WHERE T5_3='$emailmd5' ");
             oci_execute($remail);
             $checkmail=oci_fetch_row($remail);
             if($checkmail!=0) {
                 echo "this email is already existed";
             }else {
-				$emailmd5=base64_encode($email);
-				$codemellimd5=base64_encode($codemelli);
+			     $codemellimd5=encrypt($codemelli,$codemelli);
+				 $emailmd5=encrypt($email,$codemelli);
 				$rcd2 = oci_parse($con, "INSERT INTO T5(T5_1) VALUES ('$codemellimd5')");
 				oci_execute($rcd2);
                 $remail2 = oci_parse($con,"UPDATE T5 SET T5_3='$emailmd5' WHERE T5_1='$codemellimd5'");
@@ -134,4 +140,45 @@ function test_codemelli($code)
     }
 	
 }
+
+function encrypt($data, $secret)
+{
+    //Generate a key from a hash
+    $key = md5(utf8_encode($secret), true);
+
+    //Take first 8 bytes of $key and append them to the end of $key.
+    $key .= substr($key, 0, 8);
+
+    //Pad for PKCS7
+    $blockSize = mcrypt_get_block_size('tripledes', 'ecb');
+    $len = strlen($data);
+    $pad = $blockSize - ($len % $blockSize);
+    $data .= str_repeat(chr($pad), $pad);
+
+    //Encrypt data
+    $encData = mcrypt_encrypt('tripledes', $key, $data, 'ecb');
+
+    return base64_encode($encData);
+}
+
+ function decrypt($data, $secret)
+{
+    //Generate a key from a hash
+    $key = md5(utf8_encode($secret), true);
+
+    //Take first 8 bytes of $key and append them to the end of $key.
+    $key .= substr($key, 0, 8);
+
+    $data = base64_decode($data);
+
+    $data = mcrypt_decrypt('tripledes', $key, $data, 'ecb');
+
+    $block = mcrypt_get_block_size('tripledes', 'ecb');
+    $len = strlen($data);
+    $pad = ord($data[$len-1]);
+
+    return substr($data, 0, strlen($data) - $pad);
+}
 ?>
+</body>
+</html>

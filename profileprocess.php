@@ -1,3 +1,8 @@
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
 <?php
 // Create connection
 session_start();
@@ -19,3 +24,5 @@ oci_free_statement($stid);
 oci_close($conn);
 }
 ?> 
+<body>
+</html>

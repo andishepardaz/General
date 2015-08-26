@@ -1,6 +1,7 @@
 <html>
 <head>
     <title>LogIn</title>
+	<meta charset="UTF-8">
 </head>
 
 <body>

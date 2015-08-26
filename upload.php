@@ -1,23 +1,16 @@
-<?php
-$name = $_FILES['file']['name'];
-$extension = strtolower(substr($name, strpos($name, '.')+1));
-$size = $_FILES['file']['size'];
-$type = $_FILES['file']['type'];
-$max_size = 204800;
-$tmp_name = $_FILES['file']['tmp_name'];
-if(isset($name)){
-    if(!empty($name)){
-        if(($extension=='jpg'||$extension=='jpeg') && $type=='image/jpeg' && $size<=$max_size){
-            $con=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
-        $query=oci_parse($con,"INSERT INTO T1(T1_15,T1_16) VALUES()");
-        }
-        else{
-            echo "The File must be jpeg/jpg and must be 200kb or less";
-        }
-    }
-    else{
-        echo "Please choose File";
-    }
-}
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body><form action="uploadprocess.php" method="post" ENCTYPE="multipart/form-data">
+<input type="hidden" name="MAX_FILE_SIZE" value=""/>
+<label>اسکن عکس</label><input type="file" name="scanp"/><br/>
+<label>اسکن شناسنامه</label><input type="file" name="scansh"><br/>
+<label>اسکن کارت ملی</label></label><input type="file" name="scancm"/>
 
-?>
+<br/><br/>
+<input type="submit" name="submit" value="ثبت"/>
+</form>
+<a href="haghighi.php" ><input type="button" name="button" value="ادامه ی کار"/></a>
+</body>
+</html>
