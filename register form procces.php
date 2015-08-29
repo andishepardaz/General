@@ -1,3 +1,4 @@
+
 <html>
 <head>
 <meta charset="UTF-8">
@@ -5,10 +6,14 @@
 <body>
 
 <?php
+namespace Database;
+use Database\OCI;
+require_once 'src/Database/OCI.php';
 $codemelli=$_POST['codemelli'];
 $email=$_POST['email'];
 $cemail=$_POST['cemail'];
 $checkcodemelli=false;
+$oci = new OCI();
 //چک کردن اینکه فیلد کد ملی حتما باید بر شده باشد در غیر این صورت قادر به ادامه ی کار نخواهد بود
 if (empty($_POST["codemelli"])) {
     echo "کد ملی باید وارد شود";
@@ -31,22 +36,18 @@ else {
         echo "کد ملی وارد شده صحیح نمی باشد";
     }
     else{
-        $con1=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
 		$codemellimd5=encrypt($codemelli,$codemelli);
-        $rcode=oci_parse($con1,"SELECT * FROM T1 WHERE T1_1='$codemellimd5'");
-        oci_execute($rcode);
-        $checkcode=oci_fetch_row($rcode);
+		$checkcode = $oci->fetchRow("*","T1","T1_1",$codemellimd5);
         if($checkcode!=0){
             echo "کد ملی قبلا وجود دارد";
         }
         else {
 			$codemellimd5=encrypt($codemelli,$codemelli);
-            $rcode2 = oci_parse($con1, "INSERT INTO T1(T1_1) VALUES ('$codemellimd5')");
-            oci_execute($rcode2);
+            $oci->insert("T1","T1_1",$codemellimd5);
             echo "Your national code inserted successfully";
             $checkcodemelli=true;
         }
-		oci_close($con1);
+		
     }
 }
 if($checkcodemelli){
@@ -60,20 +61,16 @@ if($email && $cemail ){
 			echo "your email address is invalid try again";
 		}else{
 		//برقراری اتصال به دیتابست
-            $con=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
+            
 			$emailmd5=encrypt($email,$codemelli);
-            $remail=oci_parse($con,"SELECT T5_3 FROM T5 WHERE T5_3='$emailmd5' ");
-            oci_execute($remail);
-            $checkmail=oci_fetch_row($remail);
+            $checkmail = $oci->fetchRow("T5_3","T5","T5_3",$emailmd5);
             if($checkmail!=0) {
                 echo "this email is already existed";
             }else {
 			     $codemellimd5=encrypt($codemelli,$codemelli);
 				 $emailmd5=encrypt($email,$codemelli);
-				$rcd2 = oci_parse($con, "INSERT INTO T5(T5_1) VALUES ('$codemellimd5')");
-				oci_execute($rcd2);
-                $remail2 = oci_parse($con,"UPDATE T5 SET T5_3='$emailmd5' WHERE T5_1='$codemellimd5'");
-                oci_execute($remail2);
+				$oci->insert("T5","T5_1",$codemellimd5);
+                $oci->update("T5","T5_3",$emailmd5,"T5_1",$codemellimd5);
                 echo "Your email inserted successfully";
                 echo "<br>";
 				//فرستادن ایمیل
@@ -161,24 +158,7 @@ function encrypt($data, $secret)
     return base64_encode($encData);
 }
 
- function decrypt($data, $secret)
-{
-    //Generate a key from a hash
-    $key = md5(utf8_encode($secret), true);
 
-    //Take first 8 bytes of $key and append them to the end of $key.
-    $key .= substr($key, 0, 8);
-
-    $data = base64_decode($data);
-
-    $data = mcrypt_decrypt('tripledes', $key, $data, 'ecb');
-
-    $block = mcrypt_get_block_size('tripledes', 'ecb');
-    $len = strlen($data);
-    $pad = ord($data[$len-1]);
-
-    return substr($data, 0, strlen($data) - $pad);
-}
 ?>
 </body>
 </html>

@@ -5,20 +5,22 @@
 <body>
 
 <?php
+namespace Database;
+use Database\OCI;
+require_once 'src/Database/OCI.php';
 //اضافه کردن کپچا به پروژه
-//include 'captcha.php';
+include 'captcha.php';
 //خوندن اطلاعات یه صورت کد
-$myusername=base64_encode($_POST['myusername']);
-$mypassword=base64_encode($_POST['mypassword']);
+$myusername = encrypt($_POST['myusername']);
+$mypassword = encrypt($_POST['mypassword']);
 $userCaptcha = $_POST['captcha'];
-$id=($_POST['id']);
+$id=$_POST['id'];
+$oci = new OCI();
 session_start();
 //چک کردن متن کپچا
 if($_SESSION['captcha'] == $userCaptcha) {
 //چک کردن این که تمامی فیلدها یر شده یاشه
 if(!empty($_POST['myusername']) && !empty($_POST['mypassword'])) {
-    //یرقراری ارتیاط یا دیتاییس
-    $conn = oci_connect("system", "data1111224", "192.168.137.15:1521/GENERAL");
     if (!$conn) {
         $e = oci_error();
         print htmlentities($e['message']);
@@ -27,20 +29,16 @@ if(!empty($_POST['myusername']) && !empty($_POST['mypassword'])) {
         //چک کردن اینکه اطلاعات قیلا ثیت شده یاشد
         //چک کردن یوزرنیم براساس حقیقی یا حقوقی
         if ($id == 'idcodemelli') {
-            $query = "SELECT * FROM T3 WHERE T3_1='" . $myusername . "' and T3_3= '" . $mypassword . "' ";
+			$count = $oci->fetchRow2("*","T3","T3_1",$myusername,"T3_3",$mypassword);
         } else {
-            $query = "SELECT * FROM T3 WHERE T3_2='" . $myusername . "' and T3_3= '" . $mypassword . "' ";
+			$count = $oci->FetchRow2("*","T3","T3_2",$myusername,"T3_3",$mypassword);
         }
-
-        $stid = oci_parse($conn, $query);
-        $result = oci_execute($stid);
-        $count = oci_fetch_row($stid);
         if ($count !=0) {
             $_SESSION["myusername"] = $myusername;
             $_SESSION["mypassword"] = $mypassword;
             echo "خوش آمدید";
 			echo "<br>";
-			echo "user name:<br>base64_decode($myusername)<br> password:base64_decode($mypassword)<br>";
+			echo "user name:<br>decrypt($myusername)<br> password:decrypt($mypassword)<br>";
 //    header("location:C:\wamp\www\test\login try\login_success.php");
         }
         else {
@@ -55,8 +53,44 @@ else {
 else {
 	echo "captcha <br>";
 }
+function encrypt($data, $secret)
+{
+    //Generate a key from a hash
+    $key = md5(utf8_encode($secret), true);
 
+    //Take first 8 bytes of $key and append them to the end of $key.
+    $key .= substr($key, 0, 8);
 
+    //Pad for PKCS7
+    $blockSize = mcrypt_get_block_size('tripledes', 'ecb');
+    $len = strlen($data);
+    $pad = $blockSize - ($len % $blockSize);
+    $data .= str_repeat(chr($pad), $pad);
+
+    //Encrypt data
+    $encData = mcrypt_encrypt('tripledes', $key, $data, 'ecb');
+
+    return base64_encode($encData);
+}
+
+function decrypt($data, $secret)
+{
+    //Generate a key from a hash
+    $key = md5(utf8_encode($secret), true);
+
+    //Take first 8 bytes of $key and append them to the end of $key.
+    $key .= substr($key, 0, 8);
+
+    $data = base64_decode($data);
+
+    $data = mcrypt_decrypt('tripledes', $key, $data, 'ecb');
+
+    $block = mcrypt_get_block_size('tripledes', 'ecb');
+    $len = strlen($data);
+    $pad = ord($data[$len-1]);
+
+    return substr($data, 0, strlen($data) - $pad);
+}
 		
 
 

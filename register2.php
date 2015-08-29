@@ -13,6 +13,9 @@
 </form>
 
 <?php
+namespace Database;
+use Database\OCI;
+require_once 'src/Database/OCI.php';
 session_start();
 $firstname=$_POST['firstname'];
 $lastname=$_POST['lastname'];
@@ -26,6 +29,7 @@ $father=$_POST['father'];
 $year=$_POST['year'];
 $month=$_POST['month'];
 $day=$_POST['day'];
+$oci = new OCI();
 if (empty($_POST["codemelli"])) {
     echo "کد ملی باید وارد شود";
     echo "<br>";
@@ -49,37 +53,27 @@ else {
         echo "کد ملی وارد شده صحیح نمی باشد";
     }
     else{
-        $con1=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
 		$codemellimd5=encrypt($codemelli,$codemelli);
-       $ecode=oci_parse($con1,"SELECT * FROM T1 WHERE T1_1='$codemellimd5'");
-				oci_execute($ecode);
-        $checkcode=oci_fetch_row($ecode);
+		$checkcode = $oci->fetchRowAssoc($row,"*","T1","T1_1",$codemellimd5);
         if($checkcode!=0){
-            while($row=oci_fetch_assoc($ecode)){
+            while($row){
 				$dbcode=$row['codemelli'];
 				if($dbcode==$codemelli){
-				echo "your code is right";
-				
-				
-				
+				echo "your code is right";		
 				}
 				else{
 					echo "this code is not inserted";
 				}
 			}
-			
         }
         else {
             
             $checkcodemelli=true;
         }
-		oci_close($con1);
     }
-	
 }
 if($checkcodemelli){
 	if($firstname && $lastname && $password && $cpassword   &&  $father && $year && $month && $day){
-		$con=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
         $firstnamet = test_input($firstname);
         // check if name only contains letters and whitespace
         if (!preg_match('/^[پچجحخهعغفقثصضشسیبلاتنمکگوئدذرزطظژؤإأءًٌٍَُِّ\s]+$/u', $firstnamet)) {
@@ -87,8 +81,7 @@ if($checkcodemelli){
         }else{
 			$firstnamemd5=encrypt($firstname,,$codemelli);
 			$codemellimd5=encrypt($codemelli,$codemelli);
-			$query=oci_parse($con,"UPDATE T1 SET T1_2='$firstnamemd5' WHERE T1_1='$codemellimd5'  ");
-			oci_execute($query);
+			$oci->update("T1","T1_2",$firstnamemd5,"T1_1",$codemellimd5);
 		}
         $lastnamet = test_input($lastname);
         // check if name only contains letters and whitespace
@@ -97,8 +90,7 @@ if($checkcodemelli){
         }else{
 			$lastnamemd5=encrypt($lastname,$codemelli);
 			$codemellimd5=encrypt($codemelli,$codemelli);
-			$query1=oci_parse($con,"UPDATE T1 SET T1_3='$lastnamemd5' WHERE T1_1='$codemellimd5'");
-			oci_execute($query1);
+			$oci->update("T1","T1_3",$lastnamemd5,"T1_1",$codemellimd5);
 		}
         $fathert = test_input($father);
         // check if name only contains letters and whitespace
@@ -107,8 +99,7 @@ if($checkcodemelli){
         }else{
 			$fathermd5=encrypt($father,$codemelli);
 			$codemellimd5=encrypt($codemelli,$codemelli);
-			$query2=oci_parse($con,"UPDATE T1 SET T1_10='$fathermd5' WHERE T1_1='$codemellimd5'");
-			oci_execute($query1);
+			$oci->update("T1","T1_10",$fathermd5,"T1_1",$codemellimd5);
 		}
        $flagDate=0;
         if(!preg_match('[0-9]{4}', $year) && (int)$year >1320){
@@ -133,18 +124,15 @@ if($checkcodemelli){
         if($flagDate==3) {
             $date = $yearmd5 . $monthmd5 . $daymd5;
             $codemellimd5 = encrypt($codemelli,$codemelli);
-            $querydate = oci_parse($con, "UPDATE T1 SET T1_6='$date' WHERE T1_1='$codemellimd5'");
-            oci_execute($querydate);
+            $oci->update("T1","T1_6",$date,"T1_1",$codemellimd5);
             echo "your birthday date inserted successfully";
         }
 	if($password==$cpassword){
 		if(strlen($password)>4){
 			$codemellimd5=encrypt($codemelli,$codemelli);
-			$querycode=oci_parse($con,"INSERT INTO T3(T3_1)VALUES('$codemellimd5')");
-            oci_execute($querycode);
+            $oci->insert("T3","T3_1",$codemellimd5);
             $passwordmd5=encrypt($password,$codemelli);
-            $querypass=oci_parse($con,"UPDATE T3 SET T3_3='$passwordmd5' WHERE T3_1='$codemellimd5' ");
-            oci_execute($querypass);
+            $oci->update("T3","T3_3",$passwordmd5,"T3_1",$codemellimd5);
 			}else{
 				echo "your password is too short";
 			}
@@ -152,16 +140,11 @@ if($checkcodemelli){
 			}else{
 				echo "your passwords do not match";
 			}
-
-        oci_close($con);
 		}
-		
 		if(isset($_REQUEST['soal'])){
-			$con1=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
 			$codemellimd5=encrypt($codemelli,$codemelli);
 			$soalmd5=encrypt($soal,$codemelli);
-			$querysoal=oci_parse($con1,"UPDATE T3 SET T3_6='$soalmd5'WHERE T3_1='$codemellimd5'");
-			oci_execute($querysoal);
+			$oci->update("T3","T3_6",$soalmd5,"T3_1",$codemellimd5);
 			echo "your question has been inserted successfully do not forget it please!";
             oci_close($con1);
 		}else{
@@ -172,36 +155,22 @@ if($checkcodemelli){
 			echo "you have to answer to the question !";
 			echo "<br>";
 		}else{
-            $con1=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
 			$codemellimd5=encrypt($codemelli,$codemelli);
 			$javabmd5=encrypt($javab,$codemelli);
-			$queryjavab=oci_parse($con1,"UPDATE T3 SET T3_7='$javabmd5'WHERE T3_1='$codemellimd5'");
-			oci_execute($queryjavab);
+			$oci->update("T3","T3_7",$javabmd5,"T3_1",$codemellimd5);
 			echo "your answer has been inserted successfully";
 			echo "<br>";
-            oci_close($con1);
 		}
-
 		//for inserting the values of the radio buttons.
         $sex=$_POST['sex'];
-        $conn=oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
         $query="INSERT INTO T1(T1_14)VALUES(':sex')";
-        $result=oci_parse($conn,$query);
-        oci_bind_by_name($result,":sex",$sex);
-        oci_execute($result,oci_DEFAULT);
-        oci_commit($conn);
+        $oci->insert("T1","T1_14",$sex);
         echo "your sex has been inserted succesfully";
- }
-
-      
+ } 
 }else{
 		echo "please complete the form!";
 		echo "<br>";
 	}
-
-
-
-
 //تابع ورودی رو تبدیل به html میکند
 function test_input($data) {
     $data = trim($data);
