@@ -11,8 +11,8 @@ require_once 'src/Database/OCI.php';
 //اضافه کردن کپچا به پروژه
 include 'captcha.php';
 //خوندن اطلاعات یه صورت کد
-$myusername = encrypt($_POST['myusername']);
-$mypassword = encrypt($_POST['mypassword']);
+$myusername = encrypt($_POST['myusername'],$_POST['myusername']);
+$mypassword = encrypt($_POST['mypassword'],$_POST['myusername']);
 $userCaptcha = $_POST['captcha'];
 $id=$_POST['id'];
 $oci = new OCI();
@@ -38,7 +38,7 @@ if(!empty($_POST['myusername']) && !empty($_POST['mypassword'])) {
             $_SESSION["mypassword"] = $mypassword;
             echo "خوش آمدید";
 			echo "<br>";
-			echo "user name:<br>decrypt($myusername)<br> password:decrypt($mypassword)<br>";
+			echo "user name:<br>decrypt($myusername,$myusername)<br> password:decrypt($mypassword,$myusername)<br>";
 //    header("location:C:\wamp\www\test\login try\login_success.php");
         }
         else {

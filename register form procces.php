@@ -1,4 +1,4 @@
-
+<?php namespace foundationphp;?>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -6,9 +6,9 @@
 <body>
 
 <?php
-namespace Database;
-use Database\OCI;
-require_once 'src/Database/OCI.php';
+
+use foundationphp\OCI;
+require_once 'src/foundationphp/OCI.php';
 $codemelli=$_POST['codemelli'];
 $email=$_POST['email'];
 $cemail=$_POST['cemail'];
@@ -85,7 +85,7 @@ if($email && $cemail ){
 					echo "sending operation has been failed";
 				}
             }
-                      oci_close($con);
+                      
         }
 	
 

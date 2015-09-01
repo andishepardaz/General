@@ -5,23 +5,56 @@
 <body>
 <?php
 // Create connection
+namespace foundationphp;
+use foundationphp\OCI;
+require_once 'src/foundationphp/OCI.php';
+$oci = new OCI();
 session_start();
 if(isset($_SESSION['myusername'])){
 	$id=$_SESSION['myusername'];
-	$idmd5=base64_encode($id);
-$conn = oci_connect("system","data1111224","192.168.137.15:1521/GENERAL")or die("problem with connection try it later");
-if (!$conn) {
-    $e = oci_error();
-    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+$row = oci->fetchArray("T1_1","T5_3","T5","T1","T1_1","T5","T5_1",$idmd5);
+while ($row ) {
+  echo "id: " . decrypt($row["T1_1"],$id). "  Name: " .decrypt( $row["T1_2"],$id). "Last name: " .$id($row["T1_3"],$id)."Email:". ($row["T5_3"],$id). "<br>";
 }
-$stid = oci_parse($conn, "SELECT T1_1,T5_3 FROM T1 INNER JOIN T5 ON T1.T1_1=T5.T5_1 WHERE T1_1='$idmd5'");
-oci_execute($stid);
 
-while (($row = oci_fetch_array($stid, OCI_ASSOC)) != false) {
-  echo "id: " . base64_decode($row["T1_1"]). "  Name: " .base64_decode( $row["T1_2"]). "Last name: " .base64_decode($row["T1_3"])."Email:". base64_decode($row["T5_3"]). "<br>";
 }
-oci_free_statement($stid);
-oci_close($conn);
+function encrypt($data, $secret)
+{
+    //Generate a key from a hash
+    $key = md5(utf8_encode($secret), true);
+
+    //Take first 8 bytes of $key and append them to the end of $key.
+    $key .= substr($key, 0, 8);
+
+    //Pad for PKCS7
+    $blockSize = mcrypt_get_block_size('tripledes', 'ecb');
+    $len = strlen($data);
+    $pad = $blockSize - ($len % $blockSize);
+    $data .= str_repeat(chr($pad), $pad);
+
+    //Encrypt data
+    $encData = mcrypt_encrypt('tripledes', $key, $data, 'ecb');
+
+    return base64_encode($encData);
+}
+
+function decrypt($data, $secret)
+{
+    //Generate a key from a hash
+    $key = md5(utf8_encode($secret), true);
+
+    //Take first 8 bytes of $key and append them to the end of $key.
+    $key .= substr($key, 0, 8);
+
+    $data = base64_decode($data);
+
+    $data = mcrypt_decrypt('tripledes', $key, $data, 'ecb');
+
+    $block = mcrypt_get_block_size('tripledes', 'ecb');
+    $len = strlen($data);
+    $pad = ord($data[$len-1]);
+
+    return substr($data, 0, strlen($data) - $pad);
 }
 ?> 
 <body>

@@ -1,5 +1,8 @@
 <?php
 namespace foundationphp;
+use foundationphp\OCI;
+require 'src/foundationphp/OCI.php';
+
 class UploadFile {
     protected $destination;
     protected $messages = array();
@@ -15,7 +18,7 @@ class UploadFile {
             throw new \Exception("$uploadfolder must be valid, writable.");
         }
         if($uploadfolder[strlen($uploadfolder)-1] != '/'){
-            $uploadfolder .= '/';
+            $uploadfolder .= '\\';
         }
         $this->destination = $uploadfolder;
     }
@@ -39,6 +42,20 @@ class UploadFile {
             $this->savefileOci($uploaded,$Tb,$Cl,$ID,$IDV);
         }
     }
+	public function saveAndUpload($file,$codemelli,$Tb_name,$CL_name,$ID_name,$ID_value){
+		$renameDuplicates = true;
+        $this->renameDuplicates = $renameDuplicates;
+        $uploaded = $file;
+		$Cm = $codemelli;
+        $Tb = $Tb_name;
+        $Cl = $CL_name;
+        $ID = $ID_name;
+        $IDV = $ID_value;
+        if($this->checkfile($uploaded)){
+            $this->saveAndMoveFile($uploaded,$Cm,$Tb,$Cl,$ID,$IDV);
+        }
+		
+	}
     public function getMessages(){
         return $this->messages;
     }
@@ -176,12 +193,28 @@ class UploadFile {
         }
     }
     protected function savefileOci($file,$Tb_name,$CL_name,$ID_name,$ID_value){
-        $filen=($file['tmp_name']);
-        $con = oci_connect("system","data1111224","192.168.137.15:1521/GENERAL");
-        $q = oci_parse($con,"UPDATE $Tb_name SET $CL_name=utl_raw.cast_to_raw('$filen') WHERE $ID_name= $ID_value");
-        oci_execute($q);
-        oci_close($con);
+		$filen = $file['tmp_name'];
+		var_dump($filen);
+        $save = new OCI();
+        $save->updatefile($Tb_name,$CL_name,$filen,$ID_name,$ID_value);
     }
+	protected function saveAndMoveFile($file,$codemelli,$Tb_name,$CL_name,$ID_name,$ID_value){
+		$filename = isset($this->newName) ? $this->newName : $file['name'];
+		$success = move_uploaded_file($file['tmp_name'],$this->destination . $filename);
+		if ($success) {
+            $result = $file['name'] . ' was uploaded successfully';
+            if (!is_null($this->newName)) {
+                $result .= ', and was renamed ' . $this->newName;
+				}
+            $result .= '.';
+            $this->messages[] = $result;
+			$tempt = $this->destination . $filename;
+			$save = new OCI();
+			$save->updatefile($Tb_name,$CL_name,$tempt,$ID_name,$ID_value);
+        } else {
+            $this->messages[] = 'Could not upload' . $file['name'];
+        }
+	}
     protected function movefile($file){
         $filename = isset($this->newName) ? $this->newName : $file['name'];
         $success = move_uploaded_file($file['tmp_name'], $this->destination . $filename);

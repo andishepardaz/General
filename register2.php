@@ -1,21 +1,15 @@
+<?php namespace foundationphp;?> 
 <html>
 <head>
 <meta charset="UTF-8">
 </head>
 <body>
-<form action="uploadprocess.php" method="post" ENCTYPE="multipart/form-data">
-<input type="hidden" name="MAX_FILE_SIZE" value=""/>
-<label>اسکن عکس</label><input type="file" name="scanp"/><br/>
-<label>اسکن شناسنامه</label><input type="file" name="scansh"><br/>
-<label>اسکن کارت ملی</label></label><input type="file" name="scancm"/>
-<br/><br/>
-<input type="submit" name="submit" value="ثبت"/>
-</form>
+
 
 <?php
-namespace Database;
-use Database\OCI;
-require_once 'src/Database/OCI.php';
+use foundationphp\UploadFile;
+use foundationphp\OCI;
+require_once 'src/foundationphp/UploadFile.php';
 session_start();
 $firstname=$_POST['firstname'];
 $lastname=$_POST['lastname'];
@@ -30,6 +24,7 @@ $year=$_POST['year'];
 $month=$_POST['month'];
 $day=$_POST['day'];
 $oci = new OCI();
+$checkcodemelli = false;
 if (empty($_POST["codemelli"])) {
     echo "کد ملی باید وارد شود";
     echo "<br>";
@@ -72,14 +67,14 @@ else {
         }
     }
 }
-if($checkcodemelli){
+if(!$checkcodemelli){
 	if($firstname && $lastname && $password && $cpassword   &&  $father && $year && $month && $day){
         $firstnamet = test_input($firstname);
         // check if name only contains letters and whitespace
         if (!preg_match('/^[پچجحخهعغفقثصضشسیبلاتنمکگوئدذرزطظژؤإأءًٌٍَُِّ\s]+$/u', $firstnamet)) {
             echo "فقط فارسی تایپ کنید";
         }else{
-			$firstnamemd5=encrypt($firstname,,$codemelli);
+			$firstnamemd5=encrypt($firstname,$codemelli);
 			$codemellimd5=encrypt($codemelli,$codemelli);
 			$oci->update("T1","T1_2",$firstnamemd5,"T1_1",$codemellimd5);
 		}
@@ -102,20 +97,20 @@ if($checkcodemelli){
 			$oci->update("T1","T1_10",$fathermd5,"T1_1",$codemellimd5);
 		}
        $flagDate=0;
-        if(!preg_match('[0-9]{4}', $year) && (int)$year >1320){
+        if(!preg_match("([0-9]{4})", $year) && (int)$year <1320){
             echo "سال وارد شده معتبر نمی باشد";
 
         }else{
 			$yearmd5=encrypt($year,$codemelli);
             $flagDate++;
 		}
-        if(!preg_match('[0-9]{2}', $month) &&(int)$month>=01 &&(int)$month<=12){
+        if(!preg_match("([0-9]{2})", $month) &&(int)$month<01 &&(int)$month>12){
             echo "ماه وارد شده معتبر نمی باشد";
         }else{
 			$monthmd5=encrypt($month,$codemelli);
             $flagDate++;
 		}
-        if(!preg_match('[0-9]{2}', $day) &&(int)$day>=01 &&(int)$day<=31){
+        if(!preg_match("([0-9]{2})", $day) &&(int)$day<01 &&(int)$day>31){
             echo "روز وارد شده معتبر نمی باشد";
         }else{
 			$daymd5=encrypt($day,$codemelli);
@@ -146,7 +141,7 @@ if($checkcodemelli){
 			$soalmd5=encrypt($soal,$codemelli);
 			$oci->update("T3","T3_6",$soalmd5,"T3_1",$codemellimd5);
 			echo "your question has been inserted successfully do not forget it please!";
-            oci_close($con1);
+            
 		}else{
 			echo "you have to choose one of the questions";
 			echo "<br>";
@@ -162,15 +157,43 @@ if($checkcodemelli){
 			echo "<br>";
 		}
 		//for inserting the values of the radio buttons.
-        $sex=$_POST['sex'];
-        $query="INSERT INTO T1(T1_14)VALUES(':sex')";
-        $oci->insert("T1","T1_14",$sex);
+        $codemellimd5=encrypt($codemelli,$codemelli);
+			$sexmd5 = encrypt($sex,$codemellimd5);
+        $oci->update("T1","T1_14",$sexmd5,"T1_1",$codemellimd5);
         echo "your sex has been inserted succesfully";
- } 
-}else{
+		
+//Upload scan shenasname & scan carte melli
+$max = 1024 * 200; //100 kilobyte
+$result = array();
+if(isset($_POST['submit'])){
+	$destination = __DIR__ . '\profiles';
+	$directory = $destination."\\$codemelli\\images";
+    mkdir($directory,0777,true);
+    try {
+            $upload = new UploadFile($directory);
+            $upload->setMaxsize($max); //Change the file size
+            $upload->saveAndUpload($_FILES['scanp'],$codemelli,"T1","T1_15","T1_1",$codemellimd5);
+            $upload->saveAndUpload($_FILES['scansh'],$codemelli,"T1","T1_16","T1_1",$codemellimd5);
+            $upload->saveAndUpload($_FILES['scancm'],$codemelli,"T1","T1_17","T1_1",$codemellimd5);
+            $result = $upload->getMessages();
+        } catch(Exception $e) {
+            $result[] = $e->getMessage();
+			}
+    
+	}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ } else{
 		echo "please complete the form!";
 		echo "<br>";
 	}
+
 //تابع ورودی رو تبدیل به html میکند
 function test_input($data) {
     $data = trim($data);
