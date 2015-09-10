@@ -1,3 +1,4 @@
+<?php namespace foundationphp; ?>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -5,27 +6,24 @@
 <body>
 
 <?php
-namespace Database;
-use Database\OCI;
-require_once 'src/Database/OCI.php';
-//اضافه کردن کپچا به پروژه
-include 'captcha.php';
+
+use foundationphp\OCI;
+require_once 'src/foundationphp/OCI.php';
+
+
 //خوندن اطلاعات یه صورت کد
 $myusername = encrypt($_POST['myusername'],$_POST['myusername']);
 $mypassword = encrypt($_POST['mypassword'],$_POST['myusername']);
 $userCaptcha = $_POST['captcha'];
 $id=$_POST['id'];
+$wrong=0;
 $oci = new OCI();
 session_start();
 //چک کردن متن کپچا
 if($_SESSION['captcha'] == $userCaptcha) {
 //چک کردن این که تمامی فیلدها یر شده یاشه
 if(!empty($_POST['myusername']) && !empty($_POST['mypassword'])) {
-    if (!$conn) {
-        $e = oci_error();
-        print htmlentities($e['message']);
-        exit;
-    } else {
+
         //چک کردن اینکه اطلاعات قیلا ثیت شده یاشد
         //چک کردن یوزرنیم براساس حقیقی یا حقوقی
         if ($id == 'idcodemelli') {
@@ -41,10 +39,13 @@ if(!empty($_POST['myusername']) && !empty($_POST['mypassword'])) {
 			echo "user name:<br>decrypt($myusername,$myusername)<br> password:decrypt($mypassword,$myusername)<br>";
 //    header("location:C:\wamp\www\test\login try\login_success.php");
         }
-        else {
+        else {//تعداد دفعات وارد کردن اشتباه در دیتابیس ثبت میشود
+            $wrong++;
             echo "کاربری با این مشخصات یافت نشد ";
+            $count=$oci->insert("T1","T1_9","$wrong");
+
         }
-    }
+
 }
 else {
         echo "username or pasword <br>";

@@ -1,3 +1,4 @@
+<?php namespace foundationphp;?>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -5,16 +6,16 @@
 <body>
 <?php
 // Create connection
-namespace foundationphp;
 use foundationphp\OCI;
 require_once 'src/foundationphp/OCI.php';
 $oci = new OCI();
 session_start();
 if(isset($_SESSION['myusername'])){
 	$id=$_SESSION['myusername'];
-$row = oci->fetchArray("T1_1","T5_3","T5","T1","T1_1","T5","T5_1",$idmd5);
+	$idmd5 = encrypt($id,$id);
+$row = $oci->fetchArray("T1_1","T5_3","T5","T1","T1_1","T5","T5_1",$idmd5);
 while ($row ) {
-  echo "id: " . decrypt($row["T1_1"],$id). "  Name: " .decrypt( $row["T1_2"],$id). "Last name: " .$id($row["T1_3"],$id)."Email:". ($row["T5_3"],$id). "<br>";
+  echo "id: " . decrypt($row["T1_1"],$id). "  Name: " .decrypt( $row["T1_2"],$id). "Last name: " .decrypt($row["T1_3"],$id)."Email:". decrypt($row["T5_3"],$id). "<br>";
 }
 
 }
@@ -57,5 +58,5 @@ function decrypt($data, $secret)
     return substr($data, 0, strlen($data) - $pad);
 }
 ?> 
-<body>
+</body>
 </html>

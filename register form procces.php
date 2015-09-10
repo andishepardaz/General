@@ -6,14 +6,22 @@
 <body>
 
 <?php
-
 use foundationphp\OCI;
 require_once 'src/foundationphp/OCI.php';
+$oci = new OCI();
+if(isset($_POST['submit'])){
 $codemelli=$_POST['codemelli'];
 $email=$_POST['email'];
 $cemail=$_POST['cemail'];
 $checkcodemelli=false;
-$oci = new OCI();
+//$n = strtotime("Now");
+$timeh = strtotime("-1 minute");
+$checkp = $oci->fetchRowNull("T1_1","T1","T1_3");
+if($checkp != 0){
+	$IDvalue = $oci->fetchDel("T1_1","T1","T1_18",$timeh);
+	$oci->delete("T5","T5_1",$IDvalue);
+	$oci->deleteDate("T1","T1_18",$timeh);
+}
 //چک کردن اینکه فیلد کد ملی حتما باید بر شده باشد در غیر این صورت قادر به ادامه ی کار نخواهد بود
 if (empty($_POST["codemelli"])) {
     echo "کد ملی باید وارد شود";
@@ -47,10 +55,12 @@ else {
             echo "Your national code inserted successfully";
             $checkcodemelli=true;
         }
-		
     }
 }
 if($checkcodemelli){
+	$nowt = strtotime("Now");
+	$codemellimd5=encrypt($codemelli,$codemelli);
+	$oci->update("T1","T1_18",$nowt,"T1_1",$codemellimd5);
 //    چک کردن اینکه تمامی فیلد ها بر شده باشد
 if($email && $cemail ){
 	//چک کردن اینکه ایمل های وارد شده در دو مرحله  با هم یکسان باشد
@@ -64,6 +74,7 @@ if($email && $cemail ){
             
 			$emailmd5=encrypt($email,$codemelli);
             $checkmail = $oci->fetchRow("T5_3","T5","T5_3",$emailmd5);
+			var_dump($checkmail);
             if($checkmail!=0) {
                 echo "this email is already existed";
             }else {
@@ -97,6 +108,12 @@ echo "please complete the form";
 
 }
 
+}
+}else{
+	echo "لطفا تمامی فیلد ها را پر کنید";
+	echo "<br>";
+	header("refresh:5;url='register.php'");
+	echo "ACCESS DENIED";
 }
 function test_input($data) {
     $data = trim($data);

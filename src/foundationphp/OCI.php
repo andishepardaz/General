@@ -34,13 +34,45 @@ class OCI {
         oci_execute($query);
         oci_close($this->connect());
     }
+	public function updateDate($table,$column,$ID,$IDvalue){
+		$query = oci_parse($this->connect(),"UPDATE $table SET $column = CURRENT_TIMESTAMP(0) WHERE $ID = '$IDvalue'");
+		oci_execute($query);
+		oci_close($this->connect());
+	}
     public function updatefile($table,$column,$columnValue,$ID,$IDvalue){
         $query = oci_parse($this->connect(),"UPDATE $table SET $column = utl_raw.cast_to_raw('$columnValue') WHERE $ID = '$IDvalue'");
         oci_execute($query);
         oci_close($this->connect());
     }
+	public function deleteALL($table){
+		$query = oci_parse($this->connect(),"DELETE FROM $table");
+		oci_execute($query);
+		oci_close($this->connect());
+	}
+	public function delete($table,$ID,$IDvalue){
+		$query = oci_parse($this->connect(),"DELETE FROM $table WHERE $ID = '$IDvalue'");
+		oci_execute($query);
+		oci_close($this->connect());
+	}
+	public function deleteDate($table,$column,$columnValue){
+		$query = oci_parse($this->connect(),"DELETE FROM $table WHERE $column <= '$columnValue'");
+		oci_execute($query);
+		oci_close($this->connect());
+	}
+	public function query($parse){
+		$query = oci_parse($this->connect(),$parse);
+		oci_execute($query);
+		oci_close($this->connect());
+	}
 	public function fetchRow($column,$table,$ID,$IDvalue){
 		$query = oci_parse($this->connect(),"SELECT $column FROM $table WHERE $ID = '$IDvalue'");
+		oci_execute($query);
+		$checkcode = oci_fetch_row($query);
+		return $checkcode;
+		oci_close($this->connect());
+	}
+	public function fetchRowNull($column,$table,$ID){
+		$query = oci_parse($this->connect(),"SELECT $column FROM $table WHERE $ID IS NULL");
 		oci_execute($query);
 		$checkcode = oci_fetch_row($query);
 		return $checkcode;
@@ -52,7 +84,14 @@ class OCI {
 		$row = oci_fetch_array($query);
 		return $row;
 		oci_close($this->connect());
-		
+	}
+	public function fetchDel($column,$table,$ID,$IDvalue){
+		$query = oci_parse($this->connect(),"SELECT $column FROM $table WHERE $ID <= '$IDvalue'");
+		oci_execute($query);
+		$row = oci_fetch_array($query);
+		$rec = $row[$column];
+		return $rec;
+		oci_close($this->connect());
 	}
 	public function fetchRowAssoc(&$row,$column,$table,$ID,$IDvalue){
 		$query = oci_parse($this->connect(),"SELECT $column FROM $table WHERE $ID = '$IDvalue'");
