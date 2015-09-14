@@ -63,6 +63,7 @@ if (!$conn) {
 $id=$_GET['q'];
 $sql="select T1_2,T1_3 from T1 WHERE T1_1='$id'";
 $result=oci_parse($conn,$sql);
+oci_execute($result);
 if(oci_fetch_assoc($result)>0){
     $row=oci_fetch_assoc($result);
     echo $row['T1_2'],$row['T1_3'];
@@ -77,9 +78,10 @@ if(isset($_POST['submit'])) {
     oci_execute($execute);
 
     $execute=oci_parse($conn,"select T4_3 from T4 WHERE T4_1='$ID'");
+    oci_execute($execute);
     $rows=oci_fetch_assoc($execute);
     $contractID=$rows['T4_3'];
-    oci_execute($execute);
+
 
     $execute=oci_parse($conn,"insert into T29 (T29_1,T29_2,T29_3) VALUE ('$contractID','1','کد رهگیری')");
     oci_execute($execute);
