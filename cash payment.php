@@ -74,7 +74,7 @@ if(isset($_POST['submit'])) {
 
     $ID=$_POST['ID'];
     $cash=$_POST['cash'];
-    $execute=oci_parse($conn,"insert into T4 (T4_1,T4_4) VALUE ('$ID',DATE )");
+    $execute=oci_parse($conn,"insert into T4 (T4_1,T4_4) VALUES ('$ID',DATE )");
     oci_execute($execute);
 
     $execute=oci_parse($conn,"select T4_3 from T4 WHERE T4_1='$ID'");
@@ -83,10 +83,10 @@ if(isset($_POST['submit'])) {
     $contractID=$rows['T4_3'];
 
 
-    $execute=oci_parse($conn,"insert into T29 (T29_1,T29_2,T29_3) VALUE ('$contractID','1','کد رهگیری')");
+    $execute=oci_parse($conn,"insert into T29 (T29_1,T29_2,T29_3) VALUES ('$contractID','1','کد رهگیری')");
     oci_execute($execute);
 
-    $execute=oci_parse($conn,"insert into T14 (T14_1, T14_2,T14_5) VALUE ('کد رهگیری','$cash',DATe )");
+    $execute=oci_parse($conn,"insert into T14 (T14_1, T14_2,T14_5) VALUES ('کد رهگیری','$cash',DATe )");
     oci_execute($execute);
     oci_close($conn);
 }
