@@ -31,7 +31,7 @@
 
 <body>
 <table>
-    <form method="post" action="<?php echo $_SERVER['php_self']?>">
+    <form method="post" action="<?php echo $_SERVER['PHP_SELF'];?>">
         <tr>
             <td><label>ID خود را وارد کنید :</label></td>
             <td><input type="text" name="ID" onchange="showUser(this.value)"></td>
@@ -74,19 +74,18 @@ if(isset($_POST['submit'])) {
 
     $ID=$_POST['ID'];
     $cash=$_POST['cash'];
-    $execute=oci_parse($conn,"insert into T4 (T4_1,T4_4) VALUES ('$ID',DATE )");
+    $coderah=$ID.'1';
+    $date=date("Y-m-d h:i:sa", $d);
+    $execute=oci_parse($conn,"insert into T4 (T4_1,T4_3,T4_4,T4_5,T4_6) VALUES ('$ID','$date','1','1','$coderah' )");
     oci_execute($execute);
 
-    $execute=oci_parse($conn,"select T4_3 from T4 WHERE T4_1='$ID'");
-    oci_execute($execute);
-    $rows=oci_fetch_assoc($execute);
-    $contractID=$rows['T4_3'];
+//    $execute=oci_parse($conn,"select T4_3 from T4 WHERE T4_1='$ID'");
+//    oci_execute($execute);
+//    $rows=oci_fetch_assoc($execute);
+//    $contractID=$rows['T4_3'];
+//
 
-
-    $execute=oci_parse($conn,"insert into T29 (T29_1,T29_2,T29_3) VALUES ('$contractID','1','کد رهگیری')");
-    oci_execute($execute);
-
-    $execute=oci_parse($conn,"insert into T14 (T14_1, T14_2,T14_5) VALUES ('کد رهگیری','$cash',DATe )");
+    $execute=oci_parse($conn,"insert into T14 (T14_1, T14_3,T14_4,T14_5) VALUES ('$coderah','$cash','$cash','$date' )");
     oci_execute($execute);
     oci_close($conn);
 }
